@@ -167,8 +167,8 @@ button{font:inherit;color:inherit}
       </div>
       <div>
         <div class="kicker"><span class="dot"></span>ALGOSA (알고사) · 탐색 완료</div>
-        <div class="title">ATEN CS1922 2포트 4K DisplayPort KVM 스위치</div>
-        <div class="sub">시연용 예시 · 판매처 4곳의 결제창 금액을 비교하는 화면 · 에이전트는 결제 버튼 직전에서 멈춤</div>
+        <div class="title">UGREEN 55851 DisplayPort KVM 스위치 (컴퓨터 2대 · 모니터 2대)</div>
+        <div class="sub">시연용 예시 · 판매처 4곳의 결제창 금액 비교 · 알리 가격은 팀원 실제 기록 · 에이전트는 결제 버튼 직전에서 멈춤</div>
       </div>
     </div>
     <div class="wallet">
@@ -211,7 +211,7 @@ button{font:inherit;color:inherit}
     <div class="ins-stats" id="insStats"></div>
   </section>
 
-  <div class="foot">* 시연용 예시 데이터예요. 가격·쿠폰·카드 할인 조건은 예시예요. 적립은 나중에 돌아오는 포인트라 기본 순위에서 빼고, 켜면 1포인트 = 1원으로 계산해요.</div>
+  <div class="foot">* 시연용 예시 데이터예요. 알리 공식 스토어의 63,648원('새로운 쇼핑객 전용')과 73,712원(원래 가격)은 팀원의 2026-11-09 구매 검토 기록 값이고, 나머지 가격·쿠폰·카드 조건은 예시예요. 적립은 나중에 돌아오는 포인트라 기본 순위에서 빼고, 켜면 1포인트 = 1원으로 계산해요.</div>
 </div>
 </div>
 
@@ -225,45 +225,44 @@ const STAGES = [
 // k: base | add | sub | fail(할인 적용 실패로 늘어난 금액) | miss(혜택 미적용, 0원) | zero(무료 항목)
 //    point(나중에 돌아오는 적립 — 현금이 아니라서 기본 순위에서 제외, 토글로 포함)
 const MALLS = [
-  {id:'naver', name:'네이버 스마트스토어', short:'네이버', seller:'ATEN 공식스토어', badge:['N','#03C75A','#fff'],
+  {id:'naver', name:'네이버 스마트스토어', short:'네이버', seller:'유그린 공식스토어', badge:['N','#03C75A','#fff'],
    note1:'공식스토어 · 쿠폰 받기 전 가격',
    lines:[
-     {s:1,k:'base',label:'표시가',amt:395000},
-     {s:2,k:'sub',label:'스토어 알림받기 쿠폰',amt:-12000,tag:'결제창',short:'스토어 쿠폰'},
+     {s:1,k:'base',label:'표시가',amt:76000},
+     {s:2,k:'sub',label:'스토어 알림받기 쿠폰',amt:-3000,tag:'결제창',short:'스토어 쿠폰'},
+     {s:3,k:'sub',label:'현대카드 5% 청구할인',amt:-3650,tag:'실적 충족',tagc:'good',short:'현대카드 청구할인'},
+     {s:3,k:'point',label:'네이버플러스 적립 5%',amt:-3650,tag:'현금 아님',short:'멤버십 적립 5%'},
+   ],
+   meta:{arrive:'11/25(수) 도착',ret:'왕복 5,000원',seller:'공식스토어 ★4.9',as:'국내 A/S'}},
+  {id:'coupang', name:'쿠팡', short:'쿠팡', seller:'유그린 공식 스토어', badge:['C','#FFF1EF','#E4302B'],
+   note1:'와우 회원가',
+   lines:[
+     {s:1,k:'base',label:'표시가',amt:79900},
+     {s:2,k:'sub',label:'웰컴백 쿠폰 (나에게만)',amt:-8000,tag:'개인 쿠폰',short:'나만 받은 웰컴백 쿠폰'},
      {s:2,k:'zero',label:'배송비',val:'무료'},
-     {s:3,k:'point',label:'네이버플러스 적립 5%',amt:-19150,tag:'현금 아님',short:'멤버십 적립 5%'},
+     {s:3,k:'point',label:'와우 쿠팡캐시 적립 1%',amt:-719,tag:'현금 아님',short:'와우 캐시 적립'},
    ],
-   meta:{arrive:'11/25(수) 도착',ret:'왕복 5,000원',seller:'공식스토어 ★4.9',as:'정품 2년 무상'}},
-  {id:'gmarket', name:'G마켓', short:'G마켓', seller:'판매자 정품테크', badge:['G','#2F6BFF','#fff'],
-   note1:"'최대 할인가'로 표기",
+   meta:{arrive:'내일 11/23(월) 도착',ret:'무료 (와우)',seller:'유그린 공식 스토어',as:'국내 A/S'}},
+  {id:'11st', name:'11번가', short:'11번가', seller:'유그린샵', badge:['11','#FF0038','#fff'],
+   note1:'배송비 별도 가격',
    lines:[
-     {s:1,k:'base',label:'표시가 (최대 할인가)',amt:379000},
-     {s:2,k:'fail',label:'중복 쿠폰 할인',amt:8000,tag:'적용 실패',tagc:'bad',short:'중복 쿠폰 적용 실패'},
-     {s:2,k:'zero',label:'배송비',val:'무료'},
-     {s:3,k:'sub',label:'현대카드 5% 청구할인 (한도)',amt:-15000,tag:'실적 충족',tagc:'good',short:'현대카드 청구할인'},
-   ],
-   meta:{arrive:'11/24(화) 도착',ret:'왕복 5,000원',seller:'정품테크 ★4.7',as:'정품 2년 무상'}},
-  {id:'coupang', name:'쿠팡 로켓배송', short:'쿠팡', seller:'쿠팡 직매입', badge:['C','#FFF1EF','#E4302B'],
-   note1:'로켓배송 · 와우 회원가',
-   lines:[
-     {s:1,k:'base',label:'표시가',amt:389000},
-     {s:2,k:'sub',label:'웰컴백 쿠폰 (나에게만)',amt:-10000,tag:'개인 쿠폰',short:'나만 받은 웰컴백 쿠폰'},
-     {s:2,k:'zero',label:'로켓배송',val:'무료'},
-     {s:3,k:'point',label:'와우 쿠팡캐시 적립 1%',amt:-3790,tag:'현금 아님',short:'와우 캐시 적립'},
-   ],
-   meta:{arrive:'내일 11/23(월) 도착',ret:'무료 (와우)',seller:'쿠팡 직매입',as:'정품 2년 무상'}},
-  {id:'11st', name:'11번가', short:'11번가', seller:'판매자 케이브이엠마켓', badge:['11','#FF0038','#fff'],
-   note1:'가장 싼 옵션(HDMI) 기준 가격',
-   lines:[
-     {s:1,k:'base',label:'표시가 (HDMI 옵션 기준)',amt:372000},
-     {s:2,k:'add',label:'DisplayPort 버전 옵션',amt:23000,tag:'옵션 추가금',tagc:'bad',short:'원하는 DP 옵션'},
-     {s:2,k:'add',label:'배송비',amt:3000,short:'배송비'},
+     {s:1,k:'base',label:'표시가',amt:69900},
+     {s:2,k:'add',label:'배송비',amt:3000,tag:'별도',tagc:'bad',short:'배송비'},
      {s:3,k:'miss',label:'삼성카드 7% 청구할인',tag:'실적 미달',tagc:'bad',short:'삼성카드 할인 (전월실적 미달)'},
    ],
-   meta:{arrive:'11/25(수) 도착',ret:'왕복 6,000원',seller:'케이브이엠마켓 ★4.3',as:'판매자 경유'}},
+   meta:{arrive:'11/25(수) 도착',ret:'왕복 6,000원',seller:'유그린샵 ★4.6',as:'국내 A/S'}},
+  {id:'ali', name:'알리익스프레스', short:'알리', seller:'Ugreen Official Store', badge:['A','#FF4747','#fff'],
+   note1:"'새로운 쇼핑객 전용' 가격",
+   lines:[
+     {s:1,k:'base',label:'표시가 (새로운 쇼핑객 전용)',amt:63648},
+     {s:2,k:'fail',label:'신규 회원가 → 원래 가격',amt:10064,tag:'적용 안 됨',tagc:'bad',short:'신규 회원가 미적용'},
+     {s:2,k:'zero',label:'배송비',val:'무료'},
+     {s:3,k:'miss',label:'현대카드 5% 청구할인',tag:'해외 가맹점 제외',tagc:'bad',short:'카드 청구할인 (해외 가맹점 제외)'},
+   ],
+   meta:{arrive:'11/28~12/4 도착 예정',ret:'무료 반품',seller:'Ugreen Official ★4.8',as:'해외 판매처 경유'}},
 ];
 
-const DMIN = 320000, DMAX = 430000, TICK = 10000, ROW_H = 100;
+const DMIN = 60000, DMAX = 88000, TICK = 5000, ROW_H = 100;
 const $ = id => document.getElementById(id);
 const fmt = n => Math.abs(n).toLocaleString('ko-KR');
 const pct = v => ((v - DMIN) / (DMAX - DMIN) * 100);
@@ -427,7 +426,7 @@ function renderInsight(){
     stats = [{l:'비교한 판매처', v:`${n}곳`}, {l:'표시가 최대 차이', v:fmt(Math.max(...ps) - Math.min(...ps)) + '원'}];
   } else if (s === 2) {
     title = `결제창에 들어가 보니 1위가 <mark>${top2.short}</mark>으로 바뀌었어요`;
-    sub = `11번가는 내 모니터에 필요한 DP 옵션 +23,000원과 배송비가, G마켓은 '최대 할인가'의 중복 쿠폰이 안 먹어 +8,000원이 붙었어요.`;
+    sub = `알리의 63,648원은 '새로운 쇼핑객 전용' 가격이라 내 결제창에선 원래 가격 73,712원이 됐고, 11번가는 배송비 3,000원이 붙었어요. 쿠팡은 나에게만 온 웰컴백 쿠폰이 적용됐어요.`;
     const moved = MALLS.filter(m => ranking(1).indexOf(m.id) !== ranking(2).indexOf(m.id)).length;
     stats = [{l:'순위가 바뀐 판매처', v:`${n}곳 중 ${moved}곳`},
              {l:`표시가 1위(${top1.short})의 숨은 비용`, v:'+' + fmt(price(top1,2) - price(top1,1)) + '원', c:'bad'}];

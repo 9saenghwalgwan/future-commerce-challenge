@@ -61,3 +61,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
 #viewport::before,#viewport::after{width:min(26%,380px);backdrop-filter:blur(3.5px);-webkit-backdrop-filter:blur(3.5px)}
 #viewport::before{background:linear-gradient(to right,rgba(250,250,250,.95) 0%,rgba(250,250,250,.55) 45%,rgba(250,250,250,0) 100%);-webkit-mask-image:linear-gradient(to right,#000 10%,transparent);mask-image:linear-gradient(to right,#000 10%,transparent)}
 #viewport::after{background:linear-gradient(to left,rgba(250,250,250,.95) 0%,rgba(250,250,250,.55) 45%,rgba(250,250,250,0) 100%);-webkit-mask-image:linear-gradient(to left,#000 10%,transparent);mask-image:linear-gradient(to left,#000 10%,transparent)}
+/* in-place collapse / expand */
+.graph-node.collapsing{z-index:2}.graph-node.collapsing>*{opacity:0;transition:opacity .18s ease}
+.graph-node.working.enter{animation-delay:.3s}
+.graph-node.active:not(.working){overflow:hidden}

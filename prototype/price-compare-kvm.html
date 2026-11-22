@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>진짜 가격 비교</title>
+<title>ALGOSA 진짜 가격 비교</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 :root{
@@ -61,6 +61,14 @@ button{font:inherit;color:inherit}
 .lg.up{background:repeating-linear-gradient(135deg,var(--up) 0 3px,#FB7185 3px 6px)}
 .lg.down{border:1.5px dashed var(--down);background:rgba(5,150,105,.08)}
 .lg.tk{width:2px;height:14px;background:var(--ink);border-radius:1px}
+.hd-r{display:flex;align-items:center;gap:16px}
+.ptog{height:32px;padding:0 12px 0 8px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap}
+.ptog i{width:30px;height:18px;border-radius:999px;background:#CBD5E1;position:relative;transition:background .2s;flex:none}
+.ptog i::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s}
+.ptog[aria-checked="true"]{border-color:var(--accent);color:var(--accent)}
+.ptog[aria-checked="true"] i{background:var(--accent)}
+.ptog[aria-checked="true"] i::after{left:14px}
+.ptog.hide{visibility:hidden}
 
 .rows{position:relative;margin-top:14px;height:400px}
 .grid{position:absolute;top:0;bottom:-4px;left:274px;right:12px;pointer-events:none}
@@ -111,6 +119,8 @@ button{font:inherit;color:inherit}
 .ln.subtotal{border-top:1px dashed #D5D9E0;font-weight:800;height:38px}
 .ln.total{height:50px;border-top:2px solid var(--ink);font-size:16px;font-weight:800;margin-top:2px}
 .ln.total .r{font-size:25px;color:var(--accent)}
+.ln.point{font-size:13.5px;color:var(--ink2)}
+.ln.point .r b{font-weight:800}
 .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;margin-bottom:14px}
 .meta div{background:#F6F7F9;border-radius:12px;padding:9px 14px}
 .meta small{font-size:12px;color:var(--ink3);display:block;font-weight:600}
@@ -156,9 +166,9 @@ button{font:inherit;color:inherit}
         </svg>
       </div>
       <div>
-        <div class="kicker"><span class="dot"></span>진짜 가격 에이전트 · 탐색 완료</div>
+        <div class="kicker"><span class="dot"></span>ALGOSA (알고사) · 탐색 완료</div>
         <div class="title">ATEN CS1922 2포트 4K DisplayPort KVM 스위치</div>
-        <div class="sub">판매처 5곳의 결제창까지 들어가서 확인했어요 · 결제 버튼 직전에서 멈춤 · 11/22(일) 15:02</div>
+        <div class="sub">시연용 예시 · 판매처 4곳의 결제창 금액을 비교하는 화면 · 에이전트는 결제 버튼 직전에서 멈춤</div>
       </div>
     </div>
     <div class="wallet">
@@ -178,11 +188,14 @@ button{font:inherit;color:inherit}
     <div class="card chart">
       <div class="chart-hd">
         <h2>판매처별 가격<span id="chartSub"></span></h2>
-        <div class="legend">
-          <span><i class="lg win"></i>현재 1위</span>
-          <span><i class="lg up"></i>표시가보다 늘어난 금액</span>
-          <span><i class="lg down"></i>표시가보다 줄어든 금액</span>
-          <span><i class="lg tk"></i>표시가</span>
+        <div class="hd-r">
+          <div class="legend">
+            <span><i class="lg win"></i>현재 1위</span>
+            <span><i class="lg up"></i>늘어난 금액</span>
+            <span><i class="lg down"></i>줄어든 금액</span>
+            <span><i class="lg tk"></i>표시가</span>
+          </div>
+          <button class="ptog hide" id="ptog" role="switch" aria-checked="false"><i></i>적립까지 포함</button>
         </div>
       </div>
       <div class="rows" id="rows"><div class="grid" id="grid"></div></div>
@@ -198,26 +211,27 @@ button{font:inherit;color:inherit}
     <div class="ins-stats" id="insStats"></div>
   </section>
 
-  <div class="foot">* 시연용 가정 데이터예요. 가격·쿠폰·카드 할인 조건은 예시이고, 환율은 1,430원/$, 적립 포인트는 1포인트 = 1원으로 계산했어요.</div>
+  <div class="foot">* 시연용 예시 데이터예요. 가격·쿠폰·카드 할인 조건은 예시예요. 적립은 나중에 돌아오는 포인트라 기본 순위에서 빼고, 켜면 1포인트 = 1원으로 계산해요.</div>
 </div>
 </div>
 
 <script>
 const STAGES = [
-  {n:1, label:'표시가', sub:'검색 결과에 보이는 가격', chart:'검색 결과 기준'},
-  {n:2, label:'결제창 금액', sub:'에이전트가 결제창까지 들어가 실측', chart:'결제창 실측 기준'},
-  {n:3, label:'내 진짜 가격', sub:'내 카드 · 멤버십 · 세금까지 반영', chart:'내 지갑 기준'},
+  {n:1, label:'표시가', pill:'표시가', sub:'검색 결과에 보이는 가격', chart:'검색 결과 기준'},
+  {n:2, label:'결제할 때 내는 돈', pill:'결제할 때', sub:'에이전트가 결제창에서 읽는 금액', chart:'결제창 금액 기준'},
+  {n:3, label:'청구 후 실제 부담', pill:'청구 후', sub:'카드 청구할인 반영 · 적립은 따로', chart:'청구 후 실제 부담 기준'},
 ];
 
 // k: base | add | sub | fail(할인 적용 실패로 늘어난 금액) | miss(혜택 미적용, 0원) | zero(무료 항목)
+//    point(나중에 돌아오는 적립 — 현금이 아니라서 기본 순위에서 제외, 토글로 포함)
 const MALLS = [
   {id:'naver', name:'네이버 스마트스토어', short:'네이버', seller:'ATEN 공식스토어', badge:['N','#03C75A','#fff'],
    note1:'공식스토어 · 쿠폰 받기 전 가격',
    lines:[
      {s:1,k:'base',label:'표시가',amt:395000},
-     {s:2,k:'sub',label:'스토어 알림받기 쿠폰',amt:-12000,tag:'결제창 실측',short:'스토어 쿠폰'},
+     {s:2,k:'sub',label:'스토어 알림받기 쿠폰',amt:-12000,tag:'결제창',short:'스토어 쿠폰'},
      {s:2,k:'zero',label:'배송비',val:'무료'},
-     {s:3,k:'sub',label:'네이버플러스 적립 5%',amt:-19150,tag:'지갑 프로필',tagc:'good',short:'멤버십 적립 5%'},
+     {s:3,k:'point',label:'네이버플러스 적립 5%',amt:-19150,tag:'현금 아님',short:'멤버십 적립 5%'},
    ],
    meta:{arrive:'11/25(수) 도착',ret:'왕복 5,000원',seller:'공식스토어 ★4.9',as:'정품 2년 무상'}},
   {id:'gmarket', name:'G마켓', short:'G마켓', seller:'판매자 정품테크', badge:['G','#2F6BFF','#fff'],
@@ -235,7 +249,7 @@ const MALLS = [
      {s:1,k:'base',label:'표시가',amt:389000},
      {s:2,k:'sub',label:'웰컴백 쿠폰 (나에게만)',amt:-10000,tag:'개인 쿠폰',short:'나만 받은 웰컴백 쿠폰'},
      {s:2,k:'zero',label:'로켓배송',val:'무료'},
-     {s:3,k:'sub',label:'와우 쿠팡캐시 적립 1%',amt:-3790,tag:'지갑 프로필',tagc:'good',short:'와우 캐시 적립'},
+     {s:3,k:'point',label:'와우 쿠팡캐시 적립 1%',amt:-3790,tag:'현금 아님',short:'와우 캐시 적립'},
    ],
    meta:{arrive:'내일 11/23(월) 도착',ret:'무료 (와우)',seller:'쿠팡 직매입',as:'정품 2년 무상'}},
   {id:'11st', name:'11번가', short:'11번가', seller:'판매자 케이브이엠마켓', badge:['11','#FF0038','#fff'],
@@ -247,30 +261,26 @@ const MALLS = [
      {s:3,k:'miss',label:'삼성카드 7% 청구할인',tag:'실적 미달',tagc:'bad',short:'삼성카드 할인 (전월실적 미달)'},
    ],
    meta:{arrive:'11/25(수) 도착',ret:'왕복 6,000원',seller:'케이브이엠마켓 ★4.3',as:'판매자 경유'}},
-  {id:'amazon', name:'아마존 US 직구', short:'아마존', seller:'Amazon.com', badge:['a','#232F3E','#FF9900'],
-   note1:'$249.99 원화 환산',
-   lines:[
-     {s:1,k:'base',label:'표시가 $249.99',amt:357490},
-     {s:2,k:'add',label:'국제 배송비 $14.99',amt:21440,tag:'결제창 실측',short:'국제 배송비'},
-     {s:2,k:'add',label:'수입세 예치금 (부가세 10%)',amt:37890,tag:'결제창 실측',short:'수입세 예치금'},
-     {s:3,k:'add',label:'해외결제 수수료 1.2%',amt:5000,tag:'카드 약관',short:'해외결제 수수료'},
-   ],
-   meta:{arrive:'12/1(화)~12/4(금)',ret:'국제 반송 약 5만 원',seller:'Amazon.com',as:'국내 AS 불가'}},
 ];
 
-const DMIN = 300000, DMAX = 470000, TICK = 20000, ROW_H = 80;
+const DMIN = 320000, DMAX = 430000, TICK = 10000, ROW_H = 100;
 const $ = id => document.getElementById(id);
 const fmt = n => Math.abs(n).toLocaleString('ko-KR');
 const pct = v => ((v - DMIN) / (DMAX - DMIN) * 100);
 const byId = id => MALLS.find(m => m.id === id);
-const price = (m, s) => m.lines.filter(l => l.s <= s).reduce((a, l) => a + (l.amt || 0), 0);
-const ranking = s => [...MALLS].sort((a, b) => price(a, s) - price(b, s)).map(m => m.id);
+const isPoint = l => l.k === 'point';
+// 기본은 현금 기준(적립 제외). pts=true면 적립을 1포인트 = 1원으로 뺀다.
+const price = (m, s, pts = state.points) =>
+  m.lines.filter(l => l.s <= s && (pts || !isPoint(l))).reduce((a, l) => a + (l.amt || 0), 0);
+const ranking = (s, pts = state.points) =>
+  [...MALLS].sort((a, b) => price(a, s, pts) - price(b, s, pts)).map(m => m.id);
 
 const params = new URLSearchParams(location.search);
 const state = {
   stage: Math.min(3, Math.max(1, +params.get('stage') || 1)),
   selected: params.get('mall'),
   follow: !params.get('mall'),
+  points: params.get('points') === '1',
 };
 if (params.get('static')) $('canvas').classList.add('static');
 
@@ -319,12 +329,14 @@ function buildRows(){
 function amtText(l){
   if (l.k === 'zero') return `<b class="muted">${l.val}</b>`;
   if (l.k === 'miss') return `<b class="muted">미적용</b>`;
+  if (l.k === 'point') return state.points ? `<b class="down">−${fmt(l.amt)}</b>` : `<b class="muted">${fmt(l.amt)}P 따로</b>`;
   return l.amt > 0 ? `<b class="up">+${fmt(l.amt)}</b>` : `<b class="down">−${fmt(l.amt)}</b>`;
 }
 
 function reasonHTML(m, s){
   if (s === 1) return `<span class="muted">${m.note1}</span>`;
   const ls = m.lines.filter(l => l.s === s && l.short);
+  if (!ls.length) return `<span class="muted">청구할인 없음</span>`;
   return ls.map(l => `${l.short} ${amtText(l)}`).join('<span class="muted"> · </span>');
 }
 
@@ -364,7 +376,8 @@ function renderRows(){
 
 function lineHTML(l, dim){
   const icons = {base:['₩','#EEF0F4','#475569'], add:['+','#FFF1F3','#E11D48'], sub:['−','#E7F8F1','#059669'],
-                 fail:['!','#FFF1F3','#E11D48'], miss:['×','#F1F5F9','#94A3B8'], zero:['0','#F1F5F9','#94A3B8']};
+                 fail:['!','#FFF1F3','#E11D48'], miss:['×','#F1F5F9','#94A3B8'], zero:['0','#F1F5F9','#94A3B8'],
+                 point:['P','#EEF0FF','#4F46E5']};
   const [ic, bg, fg] = icons[l.k];
   const label = l.k === 'miss' ? `<s>${l.label}</s>` : l.label;
   const tag = l.tag ? `<span class="tag ${l.tagc || ''}">${l.tag}</span>` : '';
@@ -377,13 +390,19 @@ function renderPanel(){
   const [t, bg, fg] = m.badge;
   let rows = '';
   m.lines.filter(l => l.s <= 2).forEach(l => rows += lineHTML(l, l.s > s));
-  rows += `<div class="ln subtotal${s < 2 ? ' dim' : ''}"><span>결제창 금액</span><span>${fmt(price(m, 2))}원</span></div>`;
-  m.lines.filter(l => l.s === 3).forEach(l => rows += lineHTML(l, l.s > s));
-  rows += `<div class="ln total${s < 3 ? ' dim' : ''}"><span>내 진짜 가격</span><span class="r">${fmt(price(m, 3))}원</span></div>`;
+  rows += `<div class="ln subtotal${s < 2 ? ' dim' : ''}"><span>결제할 때 내는 돈</span><span>${fmt(price(m, 2))}원</span></div>`;
+  m.lines.filter(l => l.s === 3 && !isPoint(l)).forEach(l => rows += lineHTML(l, l.s > s));
+  rows += `<div class="ln total${s < 3 ? ' dim' : ''}"><span>청구 후 실제 부담</span><span class="r">${fmt(price(m, 3, false))}원</span></div>`;
+  m.lines.filter(isPoint).forEach(l => {
+    const right = state.points
+      ? `<b>적립 포함 ${fmt(price(m, 3, true))}원</b>`
+      : `<b class="down">${fmt(l.amt)}P</b>`;
+    rows += `<div class="ln point${s < 3 ? ' dim' : ''}"><span class="l"><span class="ic" style="background:#EEF0FF;color:#4F46E5">P</span>나중에 돌아올 ${l.label}<span class="tag">${l.tag}</span></span><span class="r">${right}</span></div>`;
+  });
   $('panel').innerHTML = `
     <div class="p-hd"><span class="badge" style="background:${bg};color:${fg}">${t}</span>
       <span><b>${m.name}</b><small>${m.seller}</small></span>
-      <span class="pill">${STAGES[s-1].label} ${r}위</span></div>
+      <span class="pill">${STAGES[s-1].pill} ${r}위</span></div>
     <div class="lines">${rows}</div>
     <div class="meta">
       <div><small>도착 예정</small><b>${m.meta.arrive}</b></div>
@@ -396,24 +415,32 @@ function renderPanel(){
 }
 
 function renderInsight(){
-  const s = state.stage, w = byId(ranking(s)[0]);
-  const amz = byId('amazon'), nav = byId('naver'), cp = byId('coupang');
+  const s = state.stage, n = MALLS.length;
+  const top1 = byId(ranking(1)[0]), top2 = byId(ranking(2)[0]);
+  const cash = byId(ranking(3, false)[0]), withPts = byId(ranking(3, true)[0]);
+  const cp = byId('coupang');
   let title, sub, stats;
   if (s === 1) {
-    title = `표시가만 보면 최저가는 <mark>아마존 직구 ${fmt(price(w,1))}원</mark>`;
-    sub = '검색 결과와 가격비교 사이트가 보여주는 건 여기까지예요.';
+    title = `표시가만 보면 최저가는 <mark>${top1.short} ${fmt(price(top1,1))}원</mark>`;
+    sub = `${top1.note1}이에요. 검색 결과와 가격비교 사이트가 보여주는 건 여기까지예요.`;
     const ps = MALLS.map(m => price(m,1));
-    stats = [{l:'비교한 판매처', v:'5곳'}, {l:'표시가 최대 차이', v:fmt(Math.max(...ps) - Math.min(...ps)) + '원'}];
+    stats = [{l:'비교한 판매처', v:`${n}곳`}, {l:'표시가 최대 차이', v:fmt(Math.max(...ps) - Math.min(...ps)) + '원'}];
   } else if (s === 2) {
-    title = `결제창에 들어가 보니 1위가 <mark>쿠팡</mark>으로 바뀌었어요`;
-    sub = `아마존은 배송비·수입세로 +${fmt(price(amz,2) - price(amz,1))}원, 11번가는 원하는 DP 옵션에 +23,000원이 붙었어요.`;
+    title = `결제창에 들어가 보니 1위가 <mark>${top2.short}</mark>으로 바뀌었어요`;
+    sub = `11번가는 내 모니터에 필요한 DP 옵션 +23,000원과 배송비가, G마켓은 '최대 할인가'의 중복 쿠폰이 안 먹어 +8,000원이 붙었어요.`;
     const moved = MALLS.filter(m => ranking(1).indexOf(m.id) !== ranking(2).indexOf(m.id)).length;
-    stats = [{l:'순위가 바뀐 판매처', v:`5곳 중 ${moved}곳`}, {l:'아마존 숨은 비용', v:'+' + fmt(price(amz,2) - price(amz,1)) + '원', c:'bad'}];
+    stats = [{l:'순위가 바뀐 판매처', v:`${n}곳 중 ${moved}곳`},
+             {l:`표시가 1위(${top1.short})의 숨은 비용`, v:'+' + fmt(price(top1,2) - price(top1,1)) + '원', c:'bad'}];
+  } else if (!state.points) {
+    title = `카드 청구할인까지 넣은 실제 부담은 <mark>${cash.short} ${fmt(price(cash,3,false))}원</mark>이 가장 적어요`;
+    sub = `적립은 나중에 돌아오는 포인트라 따로 봤어요. 적립까지 친다면 ${withPts.short} ${fmt(price(withPts,3,true))}원이에요.`;
+    stats = [{l:`표시가 1위(${top1.short})를 샀을 때보다`, v:fmt(price(top1,3,false) - price(cash,3,false)) + '원 적게', c:'good'},
+             {l:'내일 받아야 한다면', v:`쿠팡 +${fmt(price(cp,3,false) - price(cash,3,false))}원`}];
   } else {
-    title = `내 카드·멤버십까지 넣으면 진짜 최저가는 <mark>네이버 ${fmt(price(nav,3))}원</mark>`;
-    sub = `표시가 1위였던 아마존 직구는 실제로 ${fmt(price(amz,3))}원, 꼴찌가 됐어요.`;
-    stats = [{l:'표시가 1위를 샀을 때보다', v:fmt(price(amz,3) - price(nav,3)) + '원 절약', c:'good'},
-             {l:'내일 받아야 한다면', v:'쿠팡 +' + fmt(price(cp,3) - price(nav,3)) + '원'}];
+    title = `적립까지 치면 <mark>${withPts.short} ${fmt(price(withPts,3,true))}원</mark> (1포인트 = 1원)`;
+    sub = `적립은 결제 뒤 포인트로 돌아오고 그 몰에서만 써요. 현금 기준 최저는 ${cash.short} ${fmt(price(cash,3,false))}원이에요.`;
+    stats = [{l:'현금 기준 1위', v:`${cash.short} ${fmt(price(cash,3,false))}원`},
+             {l:'적립 포함 1위', v:`${withPts.short} ${fmt(price(withPts,3,true))}원`, c:'good'}];
   }
   $('insStep').textContent = 'STEP ' + s;
   $('insText').innerHTML = `<div class="ins-title">${title}</div><div class="ins-sub">${sub}</div>`;
@@ -427,11 +454,16 @@ function render(){
     b.classList.toggle('on', n === s);
     b.classList.toggle('done', n < s);
   });
-  $('chartSub').textContent = STAGES[s-1].chart + ' · 싼 순서';
+  const tog = $('ptog');
+  tog.classList.toggle('hide', s !== 3);
+  tog.setAttribute('aria-checked', String(state.points));
+  $('chartSub').textContent = (s === 3 && state.points ? '적립 포함 기준' : STAGES[s-1].chart) + ' · 싼 순서';
   renderRows(); renderPanel(); renderInsight();
 }
 
 function setStage(s){ state.stage = s; render(); }
+function togglePoints(){ state.points = !state.points; render(); }
+$('ptog').onclick = () => { stopPlay(); togglePoints(); };
 
 /* ---------- autoplay ---------- */
 let timers = [];
@@ -447,6 +479,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' && state.stage < 3) { stopPlay(); setStage(state.stage + 1); }
   if (e.key === 'ArrowLeft' && state.stage > 1) { stopPlay(); setStage(state.stage - 1); }
   if (e.key === 'p') play();
+  if (e.key === 't' && state.stage === 3) { stopPlay(); togglePoints(); }
 });
 
 /* ---------- fit 1600x900 canvas to window ---------- */

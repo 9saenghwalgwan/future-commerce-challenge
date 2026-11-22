@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>함께 고르는 쇼핑 — 인터랙티브 초안</title>
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="소개로 돌아가기"><span class="brand-icon">↗</span> 함께 고르는 쇼핑<span class="edition">CONCEPT / 01</span></a>
+    <div class="tools"><span class="demo-label">인터랙티브 발표 초안</span><button id="reset">처음부터</button><button id="fullscreen">전체 화면 ↗</button></div>
+  </header>
+  <main>
+    <section class="journey" aria-label="쇼핑 과정 그래프">
+      <div class="map-heading"><div class="eyebrow">YOUR SHOPPING JOURNEY</div><h1>선택이 만들어지는 과정</h1><p>한 단계씩 이해하고, 나에게 맞는 방향으로.</p></div>
+      <div class="map" id="map"></div>
+      <div class="map-bottom"><span><i class="dot current"></i> 지금 살펴보는 단계</span><span><i class="dot done"></i> 지나온 단계</span><span class="map-tip">열린 노드를 눌러 다시 살펴보세요</span></div>
+    </section>
+    <section class="workspace" aria-label="현재 단계">
+      <div class="progress"><span id="step-label"></span><span id="step-count"></span></div>
+      <div class="progress-track"><div id="progress-fill"></div></div>
+      <article id="content" tabindex="-1"></article>
+      <footer class="navigation"><button id="back" class="back">← 이전</button><span id="nav-hint"></span><button id="next" class="primary">함께 시작하기 <span>→</span></button></footer>
+    </section>
+  </main>
+  <div id="announcement" class="sr-only" aria-live="polite"></div>
+  <script src="prototype.js"></script>
+</body>
+</html>

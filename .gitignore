@@ -1,1 +1,58 @@
 tmp/
+# 현장 강연 정리 노트 (로컬 보관, 푸시하지 않음)
+lecture_notes/
+
+# 개인 쿠폰이 보이는 쇼핑앱 실측 스크린샷 (로컬 보관)
+demo-screens/
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+Thumbs.db
+Desktop.ini
+
+# Editors / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local agent settings
+.claude/settings.local.json
+
+# Secrets / environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.next/
+.vercel/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Build / logs / temp
+dist/
+build/
+out/
+coverage/
+*.log
+tmp/
+.cache/

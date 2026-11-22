@@ -2,6 +2,8 @@
 
 이 프로젝트는 Future Commerce Challenge의 **Track A. Future Shopping Experience** 참가 프로젝트다.
 
+최상위 제품 컨셉은 **에이전트의 정밀한 분석과 사용자의 이해를 통해 개인 상황에 더 잘 맞고 더 디테일한 쇼핑을 가능하게 하는 것**이다. 속도·단계 축소를 주된 가치나 성공 기준으로 삼지 않는다. 사용 결과, 배송·AS, 결제 경로별 혜택까지 고려하되 검증되지 않은 만족도와 최적성을 보장하지 않는다.
+
 ## 반드시 참고할 자료
 
 - 프로젝트 작업을 시작할 때 루트의 [COMPETITION_BRIEF.md](COMPETITION_BRIEF.md)를 읽는다.

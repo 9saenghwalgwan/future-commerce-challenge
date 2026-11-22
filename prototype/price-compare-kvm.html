@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>진짜 가격 비교</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#F3F4F7; --card:#FFFFFF; --ink:#0F172A; --ink2:#475569; --ink3:#94A3B8; --line:#E5E7EB;
+  --accent:#4F46E5; --accent-soft:#EEF0FF; --up:#E11D48; --up-soft:#FFF1F3; --down:#059669; --down-soft:#E7F8F1;
+  --bar:#CBD5E1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#E6E8EE}
+body{font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;color:var(--ink);overflow:hidden;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#canvas{width:1600px;height:900px;flex:none;background:var(--bg);position:relative;padding:36px 40px 40px;display:flex;flex-direction:column;transform-origin:center center}
+
+/* header */
+.hdr{height:76px;display:flex;align-items:center;justify-content:space-between}
+.prod{display:flex;align-items:center;gap:18px}
+.prod-img{width:76px;height:76px;border-radius:20px;background:#fff;border:1px solid var(--line);display:grid;place-items:center}
+.kicker{font-size:14px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px}
+.kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--down);box-shadow:0 0 0 4px rgba(5,150,105,.16)}
+.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.sub{font-size:14px;color:var(--ink2);margin-top:4px}
+.wallet{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.wallet-label{font-size:13px;color:var(--ink3);font-weight:700}
+.chips{display:flex;gap:8px}
+.chip{font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;gap:7px;color:var(--ink2)}
+.chip i{width:7px;height:7px;border-radius:50%;background:var(--down)}
+.chip.warn i{background:var(--up)}
+
+/* stage tabs */
+.tabs{margin-top:20px;height:68px;display:flex;align-items:center;gap:10px}
+.tab{flex:1;height:68px;border-radius:16px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;cursor:pointer;text-align:left;transition:background .25s,border-color .25s,color .25s}
+.tab .n{width:30px;height:30px;border-radius:50%;background:#EEF0F4;color:var(--ink2);font-weight:800;display:grid;place-items:center;font-size:15px;flex:none;transition:background .25s,color .25s}
+.tab b{font-size:18px;font-weight:800;display:block;letter-spacing:-.01em}
+.tab small{font-size:13px;color:var(--ink3);display:block;margin-top:2px}
+.tab.done .n{background:var(--accent-soft);color:var(--accent)}
+.tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.tab.on .n{background:var(--accent);color:#fff}
+.tab.on small{color:#A5B4FC}
+.arrow{color:var(--ink3);flex:none;font-size:18px}
+.play{height:68px;padding:0 22px;border-radius:16px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--ink2);flex:none}
+.play:hover,.tab:not(.on):hover{border-color:#C7CBF5}
+
+/* main */
+.main{margin-top:18px;height:538px;display:flex;gap:20px}
+.card{background:var(--card);border-radius:20px;border:1px solid var(--line);padding:22px}
+.chart{width:1020px;display:flex;flex-direction:column}
+.chart-hd{height:34px;display:flex;align-items:center;justify-content:space-between}
+.chart-hd h2{font-size:18px;font-weight:800}
+.chart-hd h2 span{font-weight:500;color:var(--ink3);font-size:14px;margin-left:8px}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink2)}
+.legend span{display:flex;align-items:center;gap:6px}
+.lg{width:18px;height:10px;border-radius:3px;display:inline-block}
+.lg.win{background:var(--accent)}
+.lg.up{background:repeating-linear-gradient(135deg,var(--up) 0 3px,#FB7185 3px 6px)}
+.lg.down{border:1.5px dashed var(--down);background:rgba(5,150,105,.08)}
+.lg.tk{width:2px;height:14px;background:var(--ink);border-radius:1px}
+
+.rows{position:relative;margin-top:14px;height:400px}
+.grid{position:absolute;top:0;bottom:-4px;left:274px;right:12px;pointer-events:none}
+.grid i{position:absolute;top:0;bottom:0;width:1px;background:#EEF0F3}
+.row{position:absolute;left:0;right:0;top:0;height:72px;display:grid;grid-template-columns:52px 210px 1fr;align-items:center;padding:0 12px;border-radius:14px;cursor:pointer;transition:transform .6s cubic-bezier(.2,.8,.2,1) .4s,background .2s,box-shadow .2s}
+.row:hover{background:#F8F9FB}
+.row.sel{background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent)}
+.rank{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.rank b{font-size:24px;font-weight:800;line-height:1}
+.rank em{font-style:normal;font-size:12px;font-weight:800;height:15px}
+.mall{display:flex;align-items:center;gap:12px;min-width:0}
+.badge{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-weight:900;font-size:16px;flex:none;letter-spacing:-.04em}
+.mall b{font-size:16px;font-weight:700;display:block;white-space:nowrap}
+.mall small{font-size:12.5px;color:var(--ink3);display:block;margin-top:2px;white-space:nowrap}
+.barcell{position:relative;height:72px}
+.bar,.over,.saved{position:absolute;top:13px;height:26px;transition:width .7s cubic-bezier(.2,.8,.2,1),left .7s cubic-bezier(.2,.8,.2,1),background .3s}
+.bar{left:0;background:var(--bar);border-radius:3px 7px 7px 3px}
+.row.win .bar{background:var(--accent)}
+.over{background:repeating-linear-gradient(135deg,var(--up) 0 5px,#FB7185 5px 10px);border-radius:0 7px 7px 0}
+.saved{border:1.5px dashed var(--down);border-left:none;background:rgba(5,150,105,.08);border-radius:0 7px 7px 0}
+.tick{position:absolute;top:7px;height:38px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px;transition:left .7s,opacity .3s}
+.price{position:absolute;top:12px;margin-left:12px;display:flex;align-items:baseline;gap:8px;white-space:nowrap;transition:left .7s cubic-bezier(.2,.8,.2,1)}
+.price b{font-size:20px;font-weight:800}
+.row.win .price b{color:var(--accent)}
+.price em{font-style:normal;font-size:13px;font-weight:800}
+.reason{position:absolute;left:0;top:46px;font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.reason b{font-weight:800}
+.up{color:var(--up)} .down{color:var(--down)} .muted{color:var(--ink3)}
+.axis{position:relative;margin-left:274px;margin-right:12px;height:26px;margin-top:2px}
+.axis span{position:absolute;top:6px;transform:translateX(-50%);font-size:12px;color:var(--ink3);white-space:nowrap}
+
+/* detail panel */
+.panel{width:480px;display:flex;flex-direction:column}
+.p-hd{display:flex;align-items:center;gap:12px;height:52px}
+.p-hd b{font-size:19px;font-weight:800;display:block}
+.p-hd small{font-size:13px;color:var(--ink3)}
+.pill{margin-left:auto;font-size:13px;font-weight:800;padding:7px 12px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.lines{margin-top:12px;border-top:1px solid var(--line)}
+.ln{display:flex;align-items:center;justify-content:space-between;height:32px;font-size:14.5px;transition:opacity .3s}
+.ln .l{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap}
+.ln .ic{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:13px;font-weight:900;flex:none}
+.ln .tag{font-size:11px;font-weight:800;padding:3px 7px;border-radius:6px;background:#F1F5F9;color:var(--ink2)}
+.ln .tag.bad{background:var(--up-soft);color:var(--up)}
+.ln .tag.good{background:var(--down-soft);color:var(--down)}
+.ln .r{font-weight:800}
+.ln s{color:var(--ink3)}
+.ln.dim{opacity:.25}
+.ln.subtotal{border-top:1px dashed #D5D9E0;font-weight:800;height:38px}
+.ln.total{height:50px;border-top:2px solid var(--ink);font-size:16px;font-weight:800;margin-top:2px}
+.ln.total .r{font-size:25px;color:var(--accent)}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;margin-bottom:14px}
+.meta div{background:#F6F7F9;border-radius:12px;padding:9px 14px}
+.meta small{font-size:12px;color:var(--ink3);display:block;font-weight:600}
+.meta b{font-size:14.5px;font-weight:700;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cta{margin-top:auto;height:52px;border-radius:14px;background:var(--ink);color:#fff;border:0;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.cta span{font-weight:500;color:#A5B4FC;font-size:14px}
+.cta-note{font-size:12.5px;color:var(--ink3);text-align:center;margin-top:8px}
+
+/* insight */
+.insight{margin-top:18px;height:86px;border-radius:20px;background:var(--ink);color:#fff;display:flex;align-items:center;padding:0 28px;gap:24px}
+.ins-step{font-size:13px;font-weight:800;color:#A5B4FC;letter-spacing:.08em;flex:none}
+.ins-text{transition:opacity .25s}
+.ins-title{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.ins-title mark{background:none;color:#A5B4FC}
+.ins-sub{font-size:14px;color:#CBD5E1;margin-top:4px}
+.ins-stats{margin-left:auto;display:flex;gap:12px}
+.stat{background:rgba(255,255,255,.08);border-radius:14px;padding:10px 16px;min-width:168px}
+.stat small{font-size:12px;color:#94A3B8;display:block;font-weight:600}
+.stat b{font-size:20px;font-weight:800;display:block;margin-top:2px;white-space:nowrap}
+.stat.good b{color:#6EE7B7}
+.stat.bad b{color:#FDA4AF}
+.foot{position:absolute;right:40px;bottom:13px;font-size:11.5px;color:var(--ink3)}
+
+.static *{transition:none!important}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div id="canvas">
+
+  <header class="hdr">
+    <div class="prod">
+      <div class="prod-img">
+        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+          <rect x="4" y="17" width="48" height="24" rx="5" fill="#1E293B"/>
+          <rect x="4" y="17" width="48" height="6" rx="3" fill="#334155"/>
+          <rect x="10" y="27" width="11" height="8" rx="2" fill="#475569"/>
+          <rect x="24" y="27" width="11" height="8" rx="2" fill="#475569"/>
+          <text x="15.5" y="33.3" font-size="6.5" font-weight="700" fill="#E2E8F0" text-anchor="middle" font-family="sans-serif">1</text>
+          <text x="29.5" y="33.3" font-size="6.5" font-weight="700" fill="#E2E8F0" text-anchor="middle" font-family="sans-serif">2</text>
+          <circle cx="42" cy="28.5" r="2" fill="#22C55E"/>
+          <circle cx="42" cy="34" r="2" fill="#64748B"/>
+        </svg>
+      </div>
+      <div>
+        <div class="kicker"><span class="dot"></span>진짜 가격 에이전트 · 탐색 완료</div>
+        <div class="title">ATEN CS1922 2포트 4K DisplayPort KVM 스위치</div>
+        <div class="sub">판매처 5곳의 결제창까지 들어가서 확인했어요 · 결제 버튼 직전에서 멈춤 · 11/22(일) 15:02</div>
+      </div>
+    </div>
+    <div class="wallet">
+      <div class="wallet-label">내 지갑 프로필</div>
+      <div class="chips">
+        <span class="chip"><i></i>현대카드 · 전월실적 충족</span>
+        <span class="chip warn"><i></i>삼성카드 · 전월실적 미달</span>
+        <span class="chip"><i></i>네이버플러스</span>
+        <span class="chip"><i></i>쿠팡 와우</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <section class="main">
+    <div class="card chart">
+      <div class="chart-hd">
+        <h2>판매처별 가격<span id="chartSub"></span></h2>
+        <div class="legend">
+          <span><i class="lg win"></i>현재 1위</span>
+          <span><i class="lg up"></i>표시가보다 늘어난 금액</span>
+          <span><i class="lg down"></i>표시가보다 줄어든 금액</span>
+          <span><i class="lg tk"></i>표시가</span>
+        </div>
+      </div>
+      <div class="rows" id="rows"><div class="grid" id="grid"></div></div>
+      <div class="axis" id="axis"></div>
+    </div>
+
+    <aside class="card panel" id="panel"></aside>
+  </section>
+
+  <section class="insight">
+    <div class="ins-step" id="insStep">STEP 1</div>
+    <div class="ins-text" id="insText"></div>
+    <div class="ins-stats" id="insStats"></div>
+  </section>
+
+  <div class="foot">* 시연용 가정 데이터예요. 가격·쿠폰·카드 할인 조건은 예시이고, 환율은 1,430원/$, 적립 포인트는 1포인트 = 1원으로 계산했어요.</div>
+</div>
+</div>
+
+<script>
+const STAGES = [
+  {n:1, label:'표시가', sub:'검색 결과에 보이는 가격', chart:'검색 결과 기준'},
+  {n:2, label:'결제창 금액', sub:'에이전트가 결제창까지 들어가 실측', chart:'결제창 실측 기준'},
+  {n:3, label:'내 진짜 가격', sub:'내 카드 · 멤버십 · 세금까지 반영', chart:'내 지갑 기준'},
+];
+
+// k: base | add | sub | fail(할인 적용 실패로 늘어난 금액) | miss(혜택 미적용, 0원) | zero(무료 항목)
+const MALLS = [
+  {id:'naver', name:'네이버 스마트스토어', short:'네이버', seller:'ATEN 공식스토어', badge:['N','#03C75A','#fff'],
+   note1:'공식스토어 · 쿠폰 받기 전 가격',
+   lines:[
+     {s:1,k:'base',label:'표시가',amt:395000},
+     {s:2,k:'sub',label:'스토어 알림받기 쿠폰',amt:-12000,tag:'결제창 실측',short:'스토어 쿠폰'},
+     {s:2,k:'zero',label:'배송비',val:'무료'},
+     {s:3,k:'sub',label:'네이버플러스 적립 5%',amt:-19150,tag:'지갑 프로필',tagc:'good',short:'멤버십 적립 5%'},
+   ],
+   meta:{arrive:'11/25(수) 도착',ret:'왕복 5,000원',seller:'공식스토어 ★4.9',as:'정품 2년 무상'}},
+  {id:'gmarket', name:'G마켓', short:'G마켓', seller:'판매자 정품테크', badge:['G','#2F6BFF','#fff'],
+   note1:"'최대 할인가'로 표기",
+   lines:[
+     {s:1,k:'base',label:'표시가 (최대 할인가)',amt:379000},
+     {s:2,k:'fail',label:'중복 쿠폰 할인',amt:8000,tag:'적용 실패',tagc:'bad',short:'중복 쿠폰 적용 실패'},
+     {s:2,k:'zero',label:'배송비',val:'무료'},
+     {s:3,k:'sub',label:'현대카드 5% 청구할인 (한도)',amt:-15000,tag:'실적 충족',tagc:'good',short:'현대카드 청구할인'},
+   ],
+   meta:{arrive:'11/24(화) 도착',ret:'왕복 5,000원',seller:'정품테크 ★4.7',as:'정품 2년 무상'}},
+  {id:'coupang', name:'쿠팡 로켓배송', short:'쿠팡', seller:'쿠팡 직매입', badge:['C','#FFF1EF','#E4302B'],
+   note1:'로켓배송 · 와우 회원가',
+   lines:[
+     {s:1,k:'base',label:'표시가',amt:389000},
+     {s:2,k:'sub',label:'웰컴백 쿠폰 (나에게만)',amt:-10000,tag:'개인 쿠폰',short:'나만 받은 웰컴백 쿠폰'},
+     {s:2,k:'zero',label:'로켓배송',val:'무료'},
+     {s:3,k:'sub',label:'와우 쿠팡캐시 적립 1%',amt:-3790,tag:'지갑 프로필',tagc:'good',short:'와우 캐시 적립'},
+   ],
+   meta:{arrive:'내일 11/23(월) 도착',ret:'무료 (와우)',seller:'쿠팡 직매입',as:'정품 2년 무상'}},
+  {id:'11st', name:'11번가', short:'11번가', seller:'판매자 케이브이엠마켓', badge:['11','#FF0038','#fff'],
+   note1:'가장 싼 옵션(HDMI) 기준 가격',
+   lines:[
+     {s:1,k:'base',label:'표시가 (HDMI 옵션 기준)',amt:372000},
+     {s:2,k:'add',label:'DisplayPort 버전 옵션',amt:23000,tag:'옵션 추가금',tagc:'bad',short:'원하는 DP 옵션'},
+     {s:2,k:'add',label:'배송비',amt:3000,short:'배송비'},
+     {s:3,k:'miss',label:'삼성카드 7% 청구할인',tag:'실적 미달',tagc:'bad',short:'삼성카드 할인 (전월실적 미달)'},
+   ],
+   meta:{arrive:'11/25(수) 도착',ret:'왕복 6,000원',seller:'케이브이엠마켓 ★4.3',as:'판매자 경유'}},
+  {id:'amazon', name:'아마존 US 직구', short:'아마존', seller:'Amazon.com', badge:['a','#232F3E','#FF9900'],
+   note1:'$249.99 원화 환산',
+   lines:[
+     {s:1,k:'base',label:'표시가 $249.99',amt:357490},
+     {s:2,k:'add',label:'국제 배송비 $14.99',amt:21440,tag:'결제창 실측',short:'국제 배송비'},
+     {s:2,k:'add',label:'수입세 예치금 (부가세 10%)',amt:37890,tag:'결제창 실측',short:'수입세 예치금'},
+     {s:3,k:'add',label:'해외결제 수수료 1.2%',amt:5000,tag:'카드 약관',short:'해외결제 수수료'},
+   ],
+   meta:{arrive:'12/1(화)~12/4(금)',ret:'국제 반송 약 5만 원',seller:'Amazon.com',as:'국내 AS 불가'}},
+];
+
+const DMIN = 300000, DMAX = 470000, TICK = 20000, ROW_H = 80;
+const $ = id => document.getElementById(id);
+const fmt = n => Math.abs(n).toLocaleString('ko-KR');
+const pct = v => ((v - DMIN) / (DMAX - DMIN) * 100);
+const byId = id => MALLS.find(m => m.id === id);
+const price = (m, s) => m.lines.filter(l => l.s <= s).reduce((a, l) => a + (l.amt || 0), 0);
+const ranking = s => [...MALLS].sort((a, b) => price(a, s) - price(b, s)).map(m => m.id);
+
+const params = new URLSearchParams(location.search);
+const state = {
+  stage: Math.min(3, Math.max(1, +params.get('stage') || 1)),
+  selected: params.get('mall'),
+  follow: !params.get('mall'),
+};
+if (params.get('static')) $('canvas').classList.add('static');
+
+/* ---------- build static DOM ---------- */
+function buildTabs(){
+  const t = $('tabs');
+  STAGES.forEach((s, i) => {
+    if (i) t.insertAdjacentHTML('beforeend', '<span class="arrow">→</span>');
+    t.insertAdjacentHTML('beforeend',
+      `<button class="tab" data-s="${s.n}"><span class="n">${s.n}</span><span><b>${s.label}</b><small>${s.sub}</small></span></button>`);
+  });
+  t.insertAdjacentHTML('beforeend',
+    `<button class="play" id="play"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>처음부터 재생</button>`);
+  t.querySelectorAll('.tab').forEach(b => b.onclick = () => { stopPlay(); setStage(+b.dataset.s); });
+  $('play').onclick = play;
+}
+
+function buildAxis(){
+  for (let v = DMIN; v < DMAX; v += TICK) {
+    $('grid').insertAdjacentHTML('beforeend', `<i style="left:${pct(v)}%"></i>`);
+    $('axis').insertAdjacentHTML('beforeend', `<span style="left:${pct(v)}%">${v/10000}만${v===DMIN?' 원':''}</span>`);
+  }
+}
+
+function buildRows(){
+  MALLS.forEach(m => {
+    const [t, bg, fg] = m.badge;
+    const el = document.createElement('div');
+    el.className = 'row'; el.id = 'row-' + m.id;
+    el.innerHTML = `
+      <div class="rank"><b></b><em></em></div>
+      <div class="mall"><span class="badge" style="background:${bg};color:${fg}">${t}</span>
+        <span><b>${m.name}</b><small>${m.seller}</small></span></div>
+      <div class="barcell">
+        <div class="bar"></div><div class="over"></div><div class="saved"></div>
+        <div class="tick"></div>
+        <div class="price"><b></b><em></em></div>
+        <div class="reason"></div>
+      </div>`;
+    el.onclick = () => { stopPlay(); state.selected = m.id; state.follow = false; render(); };
+    $('rows').appendChild(el);
+  });
+}
+
+/* ---------- render ---------- */
+function amtText(l){
+  if (l.k === 'zero') return `<b class="muted">${l.val}</b>`;
+  if (l.k === 'miss') return `<b class="muted">미적용</b>`;
+  return l.amt > 0 ? `<b class="up">+${fmt(l.amt)}</b>` : `<b class="down">−${fmt(l.amt)}</b>`;
+}
+
+function reasonHTML(m, s){
+  if (s === 1) return `<span class="muted">${m.note1}</span>`;
+  const ls = m.lines.filter(l => l.s === s && l.short);
+  return ls.map(l => `${l.short} ${amtText(l)}`).join('<span class="muted"> · </span>');
+}
+
+function renderRows(){
+  const s = state.stage, rk = ranking(s), rk1 = ranking(1);
+  MALLS.forEach(m => {
+    const el = $('row-' + m.id), r = rk.indexOf(m.id), r1 = rk1.indexOf(m.id);
+    const p = price(m, s), d0 = price(m, 1);
+    el.style.transform = `translateY(${r * ROW_H}px)`;
+    el.classList.toggle('win', r === 0);
+    el.classList.toggle('sel', state.selected === m.id);
+    el.querySelector('.rank b').textContent = r + 1;
+    const em = el.querySelector('.rank em'), mv = r1 - r;
+    em.className = mv > 0 ? 'down' : mv < 0 ? 'up' : 'muted';
+    em.textContent = s === 1 ? '' : mv > 0 ? `▲${mv}` : mv < 0 ? `▼${-mv}` : '–';
+
+    el.querySelector('.bar').style.width = pct(p) + '%';
+    const over = el.querySelector('.over'), saved = el.querySelector('.saved');
+    over.style.left = pct(d0) + '%';
+    over.style.width = Math.max(0, pct(p) - pct(d0)) + '%';
+    saved.style.left = pct(Math.min(p, d0)) + '%';
+    saved.style.width = Math.max(0, pct(d0) - pct(p)) + '%';
+    saved.style.opacity = p < d0 ? 1 : 0;
+    const tick = el.querySelector('.tick');
+    tick.style.left = pct(d0) + '%';
+    tick.style.opacity = s === 1 ? 0 : 1;
+
+    const pr = el.querySelector('.price');
+    pr.style.left = pct(Math.max(p, d0)) + '%';
+    pr.querySelector('b').textContent = fmt(p) + '원';
+    const de = pr.querySelector('em'), diff = p - d0;
+    de.className = diff > 0 ? 'up' : 'down';
+    de.textContent = s === 1 || diff === 0 ? '' : (diff > 0 ? '+' : '−') + fmt(diff);
+    el.querySelector('.reason').innerHTML = reasonHTML(m, s);
+  });
+}
+
+function lineHTML(l, dim){
+  const icons = {base:['₩','#EEF0F4','#475569'], add:['+','#FFF1F3','#E11D48'], sub:['−','#E7F8F1','#059669'],
+                 fail:['!','#FFF1F3','#E11D48'], miss:['×','#F1F5F9','#94A3B8'], zero:['0','#F1F5F9','#94A3B8']};
+  const [ic, bg, fg] = icons[l.k];
+  const label = l.k === 'miss' ? `<s>${l.label}</s>` : l.label;
+  const tag = l.tag ? `<span class="tag ${l.tagc || ''}">${l.tag}</span>` : '';
+  const right = l.k === 'base' ? `<b class="r">${fmt(l.amt)}원</b>` : `<span class="r">${amtText(l)}</span>`;
+  return `<div class="ln${dim ? ' dim' : ''}"><span class="l"><span class="ic" style="background:${bg};color:${fg}">${ic}</span>${label}${tag}</span>${right}</div>`;
+}
+
+function renderPanel(){
+  const s = state.stage, m = byId(state.selected), r = ranking(s).indexOf(m.id) + 1;
+  const [t, bg, fg] = m.badge;
+  let rows = '';
+  m.lines.filter(l => l.s <= 2).forEach(l => rows += lineHTML(l, l.s > s));
+  rows += `<div class="ln subtotal${s < 2 ? ' dim' : ''}"><span>결제창 금액</span><span>${fmt(price(m, 2))}원</span></div>`;
+  m.lines.filter(l => l.s === 3).forEach(l => rows += lineHTML(l, l.s > s));
+  rows += `<div class="ln total${s < 3 ? ' dim' : ''}"><span>내 진짜 가격</span><span class="r">${fmt(price(m, 3))}원</span></div>`;
+  $('panel').innerHTML = `
+    <div class="p-hd"><span class="badge" style="background:${bg};color:${fg}">${t}</span>
+      <span><b>${m.name}</b><small>${m.seller}</small></span>
+      <span class="pill">${STAGES[s-1].label} ${r}위</span></div>
+    <div class="lines">${rows}</div>
+    <div class="meta">
+      <div><small>도착 예정</small><b>${m.meta.arrive}</b></div>
+      <div><small>반품 비용</small><b>${m.meta.ret}</b></div>
+      <div><small>판매자</small><b>${m.meta.seller}</b></div>
+      <div><small>AS · 보증</small><b>${m.meta.as}</b></div>
+    </div>
+    <button class="cta"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7.5" rx="2" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" stroke="currentColor" stroke-width="1.6"/></svg>${m.short} 결제창 열기 <span>결제는 내가 직접</span></button>
+    <div class="cta-note">에이전트는 결제 버튼 바로 앞에서 멈췄어요</div>`;
+}
+
+function renderInsight(){
+  const s = state.stage, w = byId(ranking(s)[0]);
+  const amz = byId('amazon'), nav = byId('naver'), cp = byId('coupang');
+  let title, sub, stats;
+  if (s === 1) {
+    title = `표시가만 보면 최저가는 <mark>아마존 직구 ${fmt(price(w,1))}원</mark>`;
+    sub = '검색 결과와 가격비교 사이트가 보여주는 건 여기까지예요.';
+    const ps = MALLS.map(m => price(m,1));
+    stats = [{l:'비교한 판매처', v:'5곳'}, {l:'표시가 최대 차이', v:fmt(Math.max(...ps) - Math.min(...ps)) + '원'}];
+  } else if (s === 2) {
+    title = `결제창에 들어가 보니 1위가 <mark>쿠팡</mark>으로 바뀌었어요`;
+    sub = `아마존은 배송비·수입세로 +${fmt(price(amz,2) - price(amz,1))}원, 11번가는 원하는 DP 옵션에 +23,000원이 붙었어요.`;
+    const moved = MALLS.filter(m => ranking(1).indexOf(m.id) !== ranking(2).indexOf(m.id)).length;
+    stats = [{l:'순위가 바뀐 판매처', v:`5곳 중 ${moved}곳`}, {l:'아마존 숨은 비용', v:'+' + fmt(price(amz,2) - price(amz,1)) + '원', c:'bad'}];
+  } else {
+    title = `내 카드·멤버십까지 넣으면 진짜 최저가는 <mark>네이버 ${fmt(price(nav,3))}원</mark>`;
+    sub = `표시가 1위였던 아마존 직구는 실제로 ${fmt(price(amz,3))}원, 꼴찌가 됐어요.`;
+    stats = [{l:'표시가 1위를 샀을 때보다', v:fmt(price(amz,3) - price(nav,3)) + '원 절약', c:'good'},
+             {l:'내일 받아야 한다면', v:'쿠팡 +' + fmt(price(cp,3) - price(nav,3)) + '원'}];
+  }
+  $('insStep').textContent = 'STEP ' + s;
+  $('insText').innerHTML = `<div class="ins-title">${title}</div><div class="ins-sub">${sub}</div>`;
+  $('insStats').innerHTML = stats.map(x => `<div class="stat ${x.c || ''}"><small>${x.l}</small><b>${x.v}</b></div>`).join('');
+}
+function render(){
+  const s = state.stage;
+  if (state.follow || !state.selected) state.selected = ranking(s)[0];
+  document.querySelectorAll('.tab').forEach(b => {
+    const n = +b.dataset.s;
+    b.classList.toggle('on', n === s);
+    b.classList.toggle('done', n < s);
+  });
+  $('chartSub').textContent = STAGES[s-1].chart + ' · 싼 순서';
+  renderRows(); renderPanel(); renderInsight();
+}
+
+function setStage(s){ state.stage = s; render(); }
+
+/* ---------- autoplay ---------- */
+let timers = [];
+function stopPlay(){ timers.forEach(clearTimeout); timers = []; }
+function play(){
+  stopPlay(); state.follow = true; setStage(1);
+  timers.push(setTimeout(() => setStage(2), 2000));
+  timers.push(setTimeout(() => setStage(3), 4600));
+}
+
+document.addEventListener('keydown', e => {
+  if (['1','2','3'].includes(e.key)) { stopPlay(); setStage(+e.key); }
+  if (e.key === 'ArrowRight' && state.stage < 3) { stopPlay(); setStage(state.stage + 1); }
+  if (e.key === 'ArrowLeft' && state.stage > 1) { stopPlay(); setStage(state.stage - 1); }
+  if (e.key === 'p') play();
+});
+
+/* ---------- fit 1600x900 canvas to window ---------- */
+function fit(){ $('canvas').style.transform = `scale(${Math.min(innerWidth / 1600, innerHeight / 900)})`; }
+addEventListener('resize', fit);
+
+buildTabs(); buildAxis(); buildRows(); fit(); render();
+if (params.get('play')) setTimeout(play, 600);
+</script>
+</body>
+</html>
